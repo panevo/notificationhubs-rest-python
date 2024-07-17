@@ -1,11 +1,9 @@
 name: "Build and publish to Test PyPI"
 
 on:
-  workflow_run:
+  push:
     branches:
       - staging
-    types:
-      - completed
 
 jobs:
   build-and-publish-to-test:
@@ -14,10 +12,10 @@ jobs:
       - uses: actions/checkout@v2
         with:
           ref: staging
-      - name: Setup Python 3.12
+      - name: Setup Python 3.9
         uses: actions/setup-python@v2
         with:
-          python-version: 3.12
+          python-version: 3.9
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
