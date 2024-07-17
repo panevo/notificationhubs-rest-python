@@ -1,3 +1,9 @@
+<!-- BEGIN PANEVO NOTICE BLOCK -->
+
+## Notice from Panevo
+
+Panevo Services Ltd. is maintaining this repo for the sole purpose of publishing the Azure Notification Hub Python SDK to PyPI. In this regard, Panevo will only be pulling upstream changes from the original repo and not making any further changes, so that any users of this software are asked to follow Microsoft's security vulnerability process to report vulnerabilities. 
+
 <!-- BEGIN MICROSOFT SECURITY.MD V0.0.2 BLOCK -->
 
 ## Security
