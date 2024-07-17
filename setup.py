@@ -8,7 +8,7 @@ setup(
     include_package_data=True,
     license="Apache-2.0 License",
     description="A Python library for sending notifications using Azure Notification Hubs REST API.",
-    long_description=open("README.rst").read(),
+    long_description=open("README.md").read(),
     long_description_content_type="text/x-rst",
     url="https://github.com/panevo/notificationhubs-rest-python",
     author="Karlo Krakan",
