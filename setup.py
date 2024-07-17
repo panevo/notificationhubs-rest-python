@@ -15,7 +15,7 @@ setup(
     author_email="karlo.krakan@panevo.com",
     classifiers=[
         "Intended Audience :: Developers",
-        "License :: OSI Approved :: Apache-2.0 License",
+        "License :: OSI Approved :: Apache Software License",
         "Programming Language :: Python",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
