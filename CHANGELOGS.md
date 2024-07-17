@@ -7,6 +7,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.0.0]
 
-- [#2](https://github.com/panevo/notificationhubs-rest-python/pull/2) - Initial release of the Notification Hubs REST wrapper for Python.
-- [#3](https://github.com/panevo/notificationhubs-rest-python/pull/3) - Update SECURITY.md with information about the repository.
-- [#4](https://github.com/panevo/notificationhubs-rest-python/pull/4) - Update README.md with information about the repository.
+- [#2](https://github.com/panevo/notificationhubs-rest-python/pull/2) Initial release of the Notification Hubs REST wrapper for Python.
+- [#3](https://github.com/panevo/notificationhubs-rest-python/pull/3) Update SECURITY.md with information about the repository.
+- [#4](https://github.com/panevo/notificationhubs-rest-python/pull/4) Update README.md with information about the repository.
