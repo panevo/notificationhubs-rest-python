@@ -8,6 +8,12 @@ This repository is a fork of Microsoft's [Azure Notification Hub Samples Reposit
 
 ## How to use the code above
 
+Install the package
+
+```
+pip install notificationhubs-rest-python
+```
+
 Detailed readme is available here -
 http://azure.microsoft.com/en-us/documentation/articles/notification-hubs-python-backend-how-to/
 
