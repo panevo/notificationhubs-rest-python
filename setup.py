@@ -4,7 +4,7 @@ from setuptools import setup
 
 setup(
     name="notificationhubs-rest-python",
-    version="1.0.0",
+    version="1.0.1",
     include_package_data=True,
     license="Apache-2.0 License",
     description="A Python library for sending notifications using Azure Notification Hubs REST API.",
