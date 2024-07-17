@@ -2,7 +2,7 @@
 
 This is an implementation of a REST wrapper for sending notifications with Notification Hubs using the [REST APIs of Notification Hubs](http://msdn.microsoft.com/en-us/library/dn495827.aspx) from a Python back-end. The useage of this code is officially recommended by Microsoft in the [documentation](https://learn.microsoft.com/en-us/azure/notification-hubs/notification-hubs-python-push-notification-tutorial#client-interface).
 
-Panevo Services Ltd. is maintaining this repo for the sole purpose of publishing the Azure Notification Hub Python SDK to PyPI. In this regard, Panevo will only be pulling upstream changes from the original repo and not making any further changes to the codebase.
+Panevo Services Ltd. is maintaining this repo for the sole purpose of publishing this Notification Hubs REST wrapper to PyPI. In this regard, Panevo will only be pulling upstream changes from the original repo and not making any further changes to the codebase.
 
 This repository is a fork of Microsoft's [Azure Notification Hub Samples Repository](https://github.com/Azure/azure-notificationhubs-samples).
 
