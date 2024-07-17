@@ -1,56 +1,24 @@
-# Azure Notification Hubs Samples
+# Notification Hubs REST wrapper for Python
 
-This repository contains sample code for Azure Notification Hubs. Click on the heading to open the selected portion of the repository. The links in the sections below point to tutorials in the [Azure Notification Hubs documentation](https://docs.microsoft.com/en-us/azure/notification-hubs/).
+This is an implementation of a REST wrapper for sending notifications with Notification Hubs using the [REST APIs of Notification Hubs](http://msdn.microsoft.com/en-us/library/dn495827.aspx) from a Python back-end.
 
-The sample applications for Android, iOS, and .NET were moved to the SDK repository for each target platform:
+Panevo Services Ltd. is maintaining this repo for the sole purpose of publishing the Azure Notification Hub Python SDK to PyPI. In this regard, Panevo will only be pulling upstream changes from the original repo and not making any further changes to the codebase.
 
-+ [Android SDK](https://github.com/Azure/azure-notificationhubs-android)
-+ [iOS SDK](https://github.com/Azure/azure-notificationhubs-ios)
-+ [.NET SDK](https://github.com/Azure/azure-notificationhubs-dotnet)
-+ [Java SDK](https://github.com/Azure/azure-notificationhubs-java-backend)
+This repository is a fork of Microsoft's [Azure Notification Hub Samples Repository](https://github.com/Azure/azure-notificationhubs-samples).
 
-## Client Applications
+## How to use the code above
 
-Samples illustrating how to use Azure Notification Hubs in a client application.
+Detailed readme is available here -
+http://azure.microsoft.com/en-us/documentation/articles/notification-hubs-python-backend-how-to/
 
-### [Flutter]
+## Registration management
 
-An example of using Flutter with the Azure Notification Hubs SDKs for both Apple and Android.
+For registration management you have to follow the content formats shown in the [REST APIs of Notification Hubs](http://msdn.microsoft.com/en-us/library/dn495827.aspx), and probably do some xml parsing is case of GETs. Be warned that element order is important and things will not work if the element are out of order.
 
-### [Apache Cordova]
+## Notes
 
-A simple example of how to use Azure Notification Hubs with an Apache Cordova application. The app uses the [cordova-azure-notification-hubs](https://github.com/derek82511/cordova-azure-notification-hubs) plugin.
+This code is provided as-is with no guarantees.
 
-### [Ionic]
+## Contributors
 
-A simple example of how to use Azure Notification Hubs with an Ionic 3 application. The app uses the [cordova-azure-notification-hubs](https://github.com/derek82511/cordova-azure-notification-hubs) plugin.
-
-## Push Apps
-
-Samples illustrating how to send notifications to apps using Azure Notification Hubs.
-
-### [Safari]
-
-Sample on how to send push notifications to Safari using Azure Notification Hubs and Azure Web Sites.
-
-## SDK
-
-### [PHP SDK]
-
-This is a sample for sending notifications to Notification Hubs using PHP.
-
-### [Python SDK]
-
-This is a sample for sending notifications to Notification Hubs using Python.
-
-<!-- Sample Apps -->
-[Flutter]: https://github.com/Azure/azure-notificationhubs-samples/tree/main/flutter
-[Apache Cordova]: https://github.com/Azure/azure-notificationhubs-samples/tree/main/apache-cordova
-[Ionic]: https://github.com/Azure/azure-notificationhubs-samples/tree/main/Ionic
-
-<!-- Push Apps -->
-[Safari]: https://github.com/Azure/azure-notificationhubs-samples/tree/main/PushToSafari
-
-<!-- SDK -->
-[PHP SDK]: https://github.com/Azure/azure-notificationhubs-samples/tree/main/notificationhubs-rest-php
-[Python SDK]: https://github.com/Azure/azure-notificationhubs-samples/tree/main/notificationhubs-rest-python
+Adrian Hall (Splunk)
