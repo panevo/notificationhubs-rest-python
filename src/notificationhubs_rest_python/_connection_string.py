@@ -12,6 +12,7 @@ def parse_connection_string(connection_string: Optional[str]) -> tuple[str, str,
 
     parts = {}
     for part in connection_string.split(";"):
+        part = part.strip()
         if not part:
             continue
         name, separator, value = part.partition("=")
