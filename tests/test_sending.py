@@ -104,7 +104,7 @@ def test_other_json_platforms(hub, hub_api, method, platform_format):
 
 @pytest.mark.parametrize(
     ("payload", "wns_type"),
-    [(TOAST, "wns/toast"), (TILE, "wns/tile")],
+    [(TOAST, "wns/toast"), (TILE, "wns/tile"), ("<badge></badge>", "wns/badge"), ("Hello", None)],
 )
 def test_windows_send(hub, hub_api, payload, wns_type):
     hub.send_windows_notification(False, payload, tags="news")
@@ -113,7 +113,7 @@ def test_windows_send(hub, hub_api, payload, wns_type):
     _, _, headers, body = split_request(call.request)
     assert headers["ServiceBusNotification-Format"] == "windows"
     assert headers["Content-Type"] == "application/xml"
-    assert headers["X-WNS-Type"] == wns_type
+    assert headers.get("X-WNS-Type") == wns_type
     assert body == payload
 
 
