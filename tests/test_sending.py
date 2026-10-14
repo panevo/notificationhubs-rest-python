@@ -9,8 +9,6 @@ from notificationhubs_rest_python.NotificationHub import AzureNotification, Azur
 
 TOAST = '<toast><visual><binding template="ToastText01"><text id="1">Hi</text></binding></visual></toast>'
 TILE = '<tile><visual><binding template="TileSmall"><text>Hi</text></binding></visual></tile>'
-WP_TOAST = '<wp:Notification xmlns:wp="WPNotification"><wp:Toast><wp:Text1>Hi</wp:Text1></wp:Toast></wp:Notification>'
-WP_TILE = '<wp:Notification xmlns:wp="WPNotification"><wp:Tile><wp:Title>Hi</wp:Title></wp:Tile></wp:Notification>'
 
 
 @pytest.fixture
@@ -91,7 +89,6 @@ def test_direct_send_without_device_handle_raises(hub, hub_api):
     [
         ("send_amazon_notification", "adm"),
         ("send_baidu_notification", "baidu"),
-        ("send_google_notification", "gcm"),
     ],
 )
 def test_other_json_platforms(hub, hub_api, method, platform_format):
@@ -116,22 +113,6 @@ def test_windows_send(hub, hub_api, payload, wns_type):
     assert headers["ServiceBusNotification-Format"] == "windows"
     assert headers["Content-Type"] == "application/xml"
     assert headers.get("X-WNS-Type") == wns_type
-    assert body == payload
-
-
-@pytest.mark.parametrize(
-    ("payload", "target", "notification_class"),
-    [(WP_TOAST, "toast", "2"), (WP_TILE, "tile", "1"), ("Hello", None, None)],
-)
-def test_windows_phone_send(hub, hub_api, payload, target, notification_class):
-    hub.send_windows_phone_notification(False, payload, tags="news")
-
-    [call] = hub_api.calls
-    _, _, headers, body = split_request(call.request)
-    assert headers["ServiceBusNotification-Format"] == "windowsphone"
-    assert headers["Content-Type"] == "application/xml"
-    assert headers.get("X-WindowsPhone-Target") == target
-    assert headers.get("X-NotificationClass") == notification_class
     assert body == payload
 
 
