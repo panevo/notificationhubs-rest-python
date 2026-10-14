@@ -30,11 +30,12 @@ class NotificationHubError(Exception):
     def from_response(cls, response: requests.Response) -> "NotificationHubError":
         """Build the error from a failed response, including the service's error code and detail."""
         code = detail = None
+        # An XML declaration after leading whitespace is not valid XML
+        text = response.text.strip()
         try:
-            root = ElementTree.fromstring(response.text)
+            root = ElementTree.fromstring(text)
         except ElementTree.ParseError:
             # Some errors, such as a wrong key, come as plain text instead of XML
-            text = response.text.strip()
             if text and not text.startswith("<"):
                 detail = text
         else:
