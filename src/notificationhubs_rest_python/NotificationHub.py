@@ -151,12 +151,20 @@ class AzureNotificationHub:
 
         tags: Optional[str]
         if isinstance(tag_or_tag_expression, abc.Set):
-            if not tag_or_tag_expression:
+            if not tag_or_tag_expression or "" in tag_or_tag_expression:
                 # An empty tags header sends the notification to every device
-                raise ValueError("The set of tags must contain at least one tag. Use tags='' to send to all devices.")
+                raise ValueError(
+                    "The set of tags must contain at least one tag and no empty tags. "
+                    "Use tags='' to send to all devices."
+                )
             tags = " || ".join(sorted(tag_or_tag_expression))
-        else:
+        elif tag_or_tag_expression is None or isinstance(tag_or_tag_expression, str):
             tags = tag_or_tag_expression
+        else:
+            raise TypeError(
+                "Invalid tags: expected a tag, a tag expression or a set of tags, not "
+                + type(tag_or_tag_expression).__name__
+            )
         if tags:
             headers[self.TAGS_HEADER_NAME] = tags
 
