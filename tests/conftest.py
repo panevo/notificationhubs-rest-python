@@ -4,7 +4,7 @@ import hmac
 import json
 import re
 import time
-from urllib.parse import parse_qs, quote, unquote, urlsplit
+from urllib.parse import parse_qs, quote, urlsplit
 
 import pytest
 import responses
@@ -62,4 +62,5 @@ def assert_valid_sas_token(token, key=KEY, key_name=KEY_NAME, resource=ENDPOINT 
     assert expiry > time.time()
     to_sign = "{}\n{}".format(fields["sr"], expiry).encode()
     expected = base64.b64encode(hmac.new(key.encode(), to_sign, hashlib.sha256).digest()).decode()
-    assert unquote(fields["sig"]) == expected
+    # The base64 signature is URL encoded, so that a "+" in it is not read as a space
+    assert fields["sig"] == quote(expected)
