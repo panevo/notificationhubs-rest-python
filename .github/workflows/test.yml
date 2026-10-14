@@ -61,16 +61,84 @@ jobs:
         name: dist
         path: dist/
     - name: Install the built package
-      # Installing the wheel into a clean environment checks that its dependencies are declared
-      run: python -m pip install dist/*.whl pytest
+      # Installing and importing the wheel in a clean environment checks that its dependencies are declared.
+      # This runs before the test dependencies are installed, because responses also installs requests
+      run: |
+        python -m pip install dist/*.whl
+        python -c "import notificationhubs_rest_python.NotificationHub"
+    - name: Install the test dependencies
+      # These are the versions from the test dependency group in pyproject.toml, which pip can
+      # only install from version 25.1, and that does not support Python 3.8
+      run: python -m pip install "coverage[toml]>=7.6" "pytest>=8" "responses>=0.25"
     - name: Run tests against the installed package
-      run: pytest tests
+      run: python -m coverage run -m pytest
+    - name: Upload coverage data
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7.0.2
+      with:
+        name: coverage-${{ matrix.python }}
+        path: .coverage.*
+        include-hidden-files: true
+        if-no-files-found: error
+
+  coverage:
+    name: Coverage
+    needs: tests
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+      with:
+        persist-credentials: false
+    - name: Set up Python
+      uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+      with:
+        python-version: '3.x'
+    - name: Download coverage data
+      uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333  # v8.0.2
+      with:
+        pattern: coverage-*
+        merge-multiple: true
+    - name: Install dependencies
+      run: python -m pip install --upgrade pip coverage
+    - name: Combine and check coverage
+      # The summary always gets the report, and the report in the log fails the job when the coverage is too low
+      run: |
+        python -m coverage combine
+        python -m coverage report --format=markdown --fail-under=0 >> "$GITHUB_STEP_SUMMARY"
+        python -m coverage report
+
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+      with:
+        persist-credentials: false
+    - name: Set up Python
+      uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+      with:
+        python-version: '3.x'
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        python -m pip install --group lint
+    - name: Run ruff
+      run: |
+        ruff check --output-format=github .
+        ruff format --check .
+    - name: Run mypy
+      run: mypy
 
   all-checks:
     # The only job required by the main branch ruleset
     name: All checks
     if: always()
-    needs: [package, tests]
+    needs: [package, lint, tests, coverage]
     runs-on: ubuntu-latest
     permissions: {}
 

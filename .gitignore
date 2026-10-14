@@ -189,3 +189,13 @@ FakesAssemblies/
 #OSX files
 .DS_Store
 xcuserdata/
+
+# Python
+*.egg-info/
+dist/
+.venv/
+.coverage
+.coverage.*
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/

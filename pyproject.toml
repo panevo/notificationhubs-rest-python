@@ -34,12 +34,57 @@ Homepage = "https://github.com/panevo/notificationhubs-rest-python"
 Changelog = "https://github.com/panevo/notificationhubs-rest-python/blob/main/CHANGELOGS.md"
 
 [tool.hatch.build.targets.wheel]
-packages = ["notificationhubs_rest_python"]
+packages = ["src/notificationhubs_rest_python"]
 
 [tool.hatch.build.targets.sdist]
 include = [
-    "/notificationhubs_rest_python",
+    "/src",
     "/tests",
     "/CHANGELOGS.md",
     "/SECURITY.md",
 ]
+
+[dependency-groups]
+test = [
+    "coverage[toml]>=7.6",
+    "pytest>=8",
+    "responses>=0.25",
+]
+lint = [
+    "mypy>=1.18",
+    "ruff>=0.14",
+    "types-requests",
+    "types-six",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = ["-ra", "--strict-config", "--strict-markers"]
+xfail_strict = true
+# Any warning fails the tests
+filterwarnings = ["error"]
+
+[tool.coverage.run]
+branch = true
+parallel = true
+source_pkgs = ["notificationhubs_rest_python"]
+
+[tool.coverage.paths]
+source = [
+    "src/notificationhubs_rest_python",
+    "*/site-packages/notificationhubs_rest_python",
+]
+
+[tool.coverage.report]
+fail_under = 90
+show_missing = true
+
+[tool.ruff]
+line-length = 120
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "W", "F", "I", "B", "UP", "PT"]
+
+[tool.mypy]
+files = ["src"]
