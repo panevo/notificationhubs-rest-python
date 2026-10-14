@@ -4,6 +4,7 @@ Each test is marked as an expected failure. The change that fixes a bug removes 
 so the test then has to pass.
 """
 
+import logging
 from datetime import datetime
 
 import pytest
@@ -64,6 +65,17 @@ def test_failed_debug_send_raises(failing_hub_api):
 
     with pytest.raises(Exception, match="Error sending notification"):
         hub.send_template_notification({"message": "Hello"})
+
+
+@pytest.mark.xfail(strict=True, reason="1.x prints the live SAS token when debug is on")
+def test_debug_output_does_not_contain_the_sas_token(hub_api, capsys, caplog):
+    caplog.set_level(logging.DEBUG)
+    hub = AzureNotificationHub(CONNECTION_STRING, HUB_NAME, debug=1)
+
+    hub.send_template_notification({"message": "Hello"})
+
+    output = capsys.readouterr()
+    assert "SharedAccessSignature" not in output.out + output.err + caplog.text
 
 
 @pytest.mark.xfail(strict=True, reason="1.x sends requests without a timeout")
