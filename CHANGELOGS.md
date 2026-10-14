@@ -23,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Scheduled sends send the time in the correct format and in UTC. A time without a timezone is taken as UTC
 - `send_windows_notification` sets the `X-WNS-Type` header from the root element of the XML payload, also when it has attributes, such as `<badge value="1"/>`
 - Drop support for Python 3.8 (end of life) and the dependency on `six`
+- Panevo now maintains the code. Update the README for 2.0, and the security policy for reporting vulnerabilities through GitHub's private vulnerability reporting
 
 ## [1.0.3] - 2026-10-14
 
