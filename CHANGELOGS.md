@@ -22,6 +22,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Scheduled sends send the time in the correct format and in UTC. A time without a timezone is taken as UTC
 - `send_windows_notification` sets the `X-WNS-Type` header when the root element of the payload has attributes, such as `<badge value="1"/>`
 - Drop support for Python 3.8 (end of life) and the dependency on `six`
+- Whitespace around the parts of a connection string is ignored, such as a trailing newline
+- A `Retry-After` header that is not a finite number is ignored, and the default backoff is used instead
+- Notifications are sent encoded as UTF-8. Previously, with urllib3 1.x, Windows notifications with characters outside Latin-1 failed with a `UnicodeEncodeError`
+- An empty set of tags raises a `ValueError`. Previously the notification was sent to all devices
 - Panevo now maintains the code. Update the README for 2.0 and report vulnerabilities through GitHub's private vulnerability reporting
 
 ## [1.0.3] - 2026-10-14
