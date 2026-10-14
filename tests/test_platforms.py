@@ -55,6 +55,21 @@ def test_windows_phone_is_no_longer_supported(hub, hub_api):
     assert len(hub_api.calls) == 0
 
 
+@pytest.mark.parametrize(
+    "payload",
+    [
+        "\ufeff<toast/>",
+        '<?xml version="1.0" encoding="utf-8"?>\n<!-- Order shipped -->\n<toast launch="order"/>',
+        "<!DOCTYPE toast>\n<toast/>",
+    ],
+)
+def test_windows_type_is_set_after_the_xml_prolog(hub, hub_api, payload):
+    hub.send_windows_notification(False, payload)
+
+    [call] = hub_api.calls
+    assert split_request(call.request)[2]["X-WNS-Type"] == "wns/toast"
+
+
 def test_scheduled_time_is_sent_in_utc(hub, hub_api):
     send_at = datetime(2026, 10, 15, 10, 0, 0, tzinfo=timezone(timedelta(hours=2)))
 
