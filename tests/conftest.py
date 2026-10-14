@@ -10,6 +10,8 @@ from urllib.parse import parse_qs, quote, urlsplit
 import pytest
 import responses
 
+from notificationhubs_rest_python import AzureNotificationHub
+
 ENDPOINT = "https://example.servicebus.windows.net/"
 HUB_NAME = "hub"
 KEY_NAME = "DefaultFullSharedAccessSignature"
@@ -22,8 +24,6 @@ ANY_HUB_URL = re.compile(r"https://[a-z]+\.servicebus\.windows\.net/.*")
 
 @pytest.fixture
 def hub():
-    from notificationhubs_rest_python import AzureNotificationHub
-
     return AzureNotificationHub(CONNECTION_STRING, HUB_NAME)
 
 
