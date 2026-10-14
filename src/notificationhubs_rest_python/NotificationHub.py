@@ -5,8 +5,9 @@ Reference: https://learn.microsoft.com/en-us/rest/api/notificationhubs/
 
 import json
 import logging
+import re
 from collections import abc
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import AbstractSet, Any, Dict, Optional, Tuple, Union
 
 from notificationhubs_rest_python._connection_string import parse_connection_string
@@ -19,8 +20,17 @@ logger = logging.getLogger("notificationhubs_rest_python")
 API_VERSION = "2020-06"
 REDACTED = "[redacted]"
 
-# Formats whose payload is sent as JSON. The others (windows, windowsphone) are sent as XML.
-JSON_FORMATS = ("template", "apple", "gcm", "adm", "baidu")
+# Formats whose payload is sent as JSON. Windows payloads are sent as XML.
+JSON_FORMATS = ("template", "apple", "fcmV1", "adm", "baidu")
+
+# Formats that no longer work, with what to use instead
+RETIRED_FORMATS = {
+    "gcm": "Google shut down the legacy GCM/FCM API on 2024-06-20. Use 'fcmV1' instead.",
+    "windowsphone": "Microsoft no longer supports MPNS (Windows Phone).",
+}
+
+# The root element of a Windows (WNS) payload decides its X-WNS-Type header
+WNS_ROOT_ELEMENT = re.compile(r"\s*(?:<\?xml[^>]*\?>\s*)?<(toast|tile|badge)[\s/>]")
 
 # A tag, a tag expression, or a set of tags that is sent as an OR expression
 Tags = Union[str, AbstractSet[str], None]
@@ -30,9 +40,13 @@ SendResult = Tuple[int, Dict[str, str]]
 
 
 class AzureNotification:
-    VALID_FORMATS = ("template", "apple", "gcm", "windows", "windowsphone", "adm", "baidu")
+    VALID_FORMATS = ("template", "apple", "fcmV1", "windows", "adm", "baidu")
 
     def __init__(self, notification_format: Optional[str] = None, payload: Any = None):
+        if notification_format in RETIRED_FORMATS:
+            raise ValueError(
+                f"The '{notification_format}' format is no longer supported. {RETIRED_FORMATS[notification_format]}"
+            )
         if notification_format not in self.VALID_FORMATS:
             raise ValueError(
                 "Invalid Notification format. Must be one of the following - "
@@ -123,8 +137,7 @@ class AzureNotificationHub:
             url += "/messages"
         else:
             url += "/schedulednotifications"
-            # scheduled_time must be UTC
-            headers[self.SCHEDULED_NOTIFICATION_HEADER_NAME] = scheduled_time.strftime("%Y-%m-%d'T'%H:%M:%S")
+            headers[self.SCHEDULED_NOTIFICATION_HEADER_NAME] = _format_schedule_time(scheduled_time)
 
         if is_direct:
             if device_handle is None:
@@ -199,7 +212,19 @@ class AzureNotificationHub:
         scheduled_time: Optional[datetime] = None,
         skip_send: bool = False,
     ) -> SendResult:
-        nh = AzureNotification("gcm", payload)
+        """Send an Android notification through Firebase Cloud Messaging (FCM) v1.
+
+        The payload uses the FCM v1 format, wrapped in a "message" object, for example
+        {"message": {"notification": {"title": "Hi", "body": "Hello"}}}. Leave out the device
+        token: Notification Hubs adds it.
+        """
+        if not isinstance(payload, dict) or not isinstance(payload.get("message"), dict):
+            raise ValueError(
+                "send_google_notification sends FCM v1 notifications, which need the payload wrapped in a "
+                "'message' object, for example {'message': {'notification': {'title': 'Hi', 'body': 'Hello'}}}. "
+                "The legacy GCM/FCM format is no longer supported by Google."
+            )
+        nh = AzureNotification("fcmV1", payload)
         return self.__send_notification(
             nh,
             is_direct=is_direct,
@@ -256,20 +281,10 @@ class AzureNotificationHub:
         scheduled_time: Optional[datetime] = None,
         skip_send: bool = False,
     ) -> SendResult:
-        nh = AzureNotification("windowsphone", payload)
-
-        if "<wp:Toast>" in payload:
-            nh.headers = {"X-WindowsPhone-Target": "toast", "X-NotificationClass": "2"}
-        elif "<wp:Tile>" in payload:
-            nh.headers = {"X-WindowsPhone-Target": "tile", "X-NotificationClass": "1"}
-
-        return self.__send_notification(
-            nh,
-            is_direct=is_direct,
-            tag_or_tag_expression=tags,
-            device_handle=device_handle,
-            scheduled_time=scheduled_time,
-            skip_send=skip_send,
+        """No longer supported: Microsoft retired MPNS, the Windows Phone push service."""
+        raise NotImplementedError(
+            "Windows Phone notifications are no longer supported, because Microsoft no longer supports MPNS. "
+            "Use send_windows_notification for Windows (WNS) devices."
         )
 
     # example wns payload =
@@ -285,12 +300,9 @@ class AzureNotificationHub:
     ) -> SendResult:
         nh = AzureNotification("windows", payload)
 
-        if "<toast>" in payload:
-            nh.headers = {"X-WNS-Type": "wns/toast"}
-        elif "<tile>" in payload:
-            nh.headers = {"X-WNS-Type": "wns/tile"}
-        elif "<badge>" in payload:
-            nh.headers = {"X-WNS-Type": "wns/badge"}
+        root_element = WNS_ROOT_ELEMENT.match(payload)
+        if root_element:
+            nh.headers = {"X-WNS-Type": "wns/" + root_element.group(1)}
 
         return self.__send_notification(
             nh,
@@ -312,6 +324,13 @@ class AzureNotificationHub:
         return self.__send_notification(
             nh, is_direct=False, tag_or_tag_expression=tags, scheduled_time=scheduled_time, skip_send=skip_send
         )
+
+
+def _format_schedule_time(scheduled_time: datetime) -> str:
+    """Format the time for the ScheduleTime header in UTC. A time without a timezone is taken as UTC."""
+    if scheduled_time.tzinfo is not None:
+        scheduled_time = scheduled_time.astimezone(timezone.utc)
+    return scheduled_time.strftime("%Y-%m-%dT%H:%M:%S")
 
 
 def _redact(headers: Dict[str, str]) -> Dict[str, str]:
