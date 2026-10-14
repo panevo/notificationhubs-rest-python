@@ -1,6 +1,12 @@
 version: 2
 updates:
-  - package-ecosystem: "pip"
-    directory: "/notificationhubs-rest-python"
+  - package-ecosystem: github-actions
+    directory: /
     schedule:
-      interval: "weekly"
+      interval: weekly
+    groups:
+      github-actions:
+        patterns:
+          - "*"
+    cooldown:
+      default-days: 7
