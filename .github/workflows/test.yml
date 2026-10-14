@@ -1,0 +1,87 @@
+name: test
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+permissions: {}
+
+jobs:
+  package:
+    name: Package
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+      with:
+        persist-credentials: false
+    - name: Set up Python
+      uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+      with:
+        python-version: '3.x'
+    - name: Install dependencies
+      run: python -m pip install --upgrade pip build twine
+    - name: Build package
+      run: python -m build
+    - name: Check package
+      run: python -m twine check --strict dist/*
+    - name: Upload distribution
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7.0.2
+      with:
+        name: dist
+        path: dist/
+        if-no-files-found: error
+
+  tests:
+    name: Python ${{ matrix.python }}
+    needs: package
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ['3.8', '3.9', '3.10', '3.11', '3.12', '3.13', '3.14']
+
+    steps:
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+      with:
+        persist-credentials: false
+    - name: Set up Python ${{ matrix.python }}
+      uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+      with:
+        python-version: ${{ matrix.python }}
+    - name: Download distribution
+      uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333  # v8.0.2
+      with:
+        name: dist
+        path: dist/
+    - name: Install the built package
+      # Installing the wheel into a clean environment checks that its dependencies are declared
+      run: python -m pip install dist/*.whl pytest
+    - name: Run tests against the installed package
+      run: pytest tests
+
+  all-checks:
+    # The only job required by the main branch ruleset
+    name: All checks
+    if: always()
+    needs: [package, tests]
+    runs-on: ubuntu-latest
+    permissions: {}
+
+    steps:
+    - name: Check that all jobs succeeded
+      env:
+        RESULTS: ${{ join(needs.*.result, ' ') }}
+      run: |
+        for result in $RESULTS; do
+          if [ "$result" != "success" ]; then
+            echo "::error::One or more jobs did not succeed: $RESULTS"
+            exit 1
+          fi
+        done
