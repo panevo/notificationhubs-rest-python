@@ -1,9 +1,9 @@
 """What the send methods put on the wire, for each platform."""
+
 import pytest
 
-from notificationhubs_rest_python.NotificationHub import AzureNotification, AzureNotificationHub
-
 from conftest import CONNECTION_STRING, HUB_NAME, assert_valid_sas_token, json_body, split_request
+from notificationhubs_rest_python.NotificationHub import AzureNotification, AzureNotificationHub
 
 TOAST = '<toast><visual><binding template="ToastText01"><text id="1">Hi</text></binding></visual></toast>'
 TILE = '<tile><visual><binding template="TileSmall"><text>Hi</text></binding></visual></tile>'
@@ -77,14 +77,14 @@ def test_direct_send(hub, hub_api):
 
 
 def test_direct_send_without_device_handle_raises(hub, hub_api):
-    with pytest.raises(Exception):
+    with pytest.raises(Exception, match="Missing PNS device handle"):
         hub.send_apple_notification(True, {"aps": {"alert": "Hello"}})
 
     assert len(hub_api.calls) == 0
 
 
 @pytest.mark.parametrize(
-    "method, platform_format",
+    ("method", "platform_format"),
     [("send_amazon_notification", "adm"), ("send_baidu_notification", "baidu")],
 )
 def test_other_json_platforms(hub, hub_api, method, platform_format):
@@ -98,7 +98,7 @@ def test_other_json_platforms(hub, hub_api, method, platform_format):
 
 
 @pytest.mark.parametrize(
-    "payload, wns_type",
+    ("payload", "wns_type"),
     [(TOAST, "wns/toast"), (TILE, "wns/tile")],
 )
 def test_windows_send(hub, hub_api, payload, wns_type):
@@ -132,12 +132,12 @@ def test_skip_send_makes_no_request(hub, hub_api):
 
 
 def test_failed_send_raises(hub, failing_hub_api):
-    with pytest.raises(Exception) as error:
+    with pytest.raises(Exception, match="Error sending notification") as error:
         hub.send_template_notification({"message": "Hello"})
 
     assert "400" in str(error.value)
 
 
 def test_unknown_notification_format_raises():
-    with pytest.raises(Exception):
+    with pytest.raises(Exception, match="Invalid Notification format"):
         AzureNotification("unknown", {})

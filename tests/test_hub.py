@@ -1,18 +1,18 @@
 """Creating a hub, and extending it with requests of your own."""
+
 from concurrent.futures import ThreadPoolExecutor
 
 import pytest
 
-from notificationhubs_rest_python.NotificationHub import AzureNotificationHub
-
 from conftest import CONNECTION_STRING, ENDPOINT, HUB_NAME, assert_valid_sas_token
+from notificationhubs_rest_python.NotificationHub import AzureNotificationHub
 
 
 class HubWithInstallations(AzureNotificationHub):
     """A subclass that builds its own installation requests from the hub's attributes and SAS token."""
 
     def installation_request(self, installation_id):
-        url = "{}{}/installations/{}".format(self.Endpoint, self.HubName, installation_id)
+        url = f"{self.Endpoint}{self.HubName}/installations/{installation_id}"
         headers = {
             "Content-Type": "application/json",
             "Authorization": self._AzureNotificationHub__generate_sas_token(),

@@ -14,9 +14,7 @@ HUB_NAME = "hub"
 KEY_NAME = "DefaultFullSharedAccessSignature"
 KEY = "dGVzdC1rZXk="
 CONNECTION_STRING = (
-    "Endpoint=sb://example.servicebus.windows.net/;"
-    "SharedAccessKeyName=" + KEY_NAME + ";"
-    "SharedAccessKey=" + KEY
+    "Endpoint=sb://example.servicebus.windows.net/;SharedAccessKeyName=" + KEY_NAME + ";SharedAccessKey=" + KEY
 )
 ANY_HUB_URL = re.compile(r"https://[a-z]+\.servicebus\.windows\.net/.*")
 
@@ -57,7 +55,7 @@ def assert_valid_sas_token(token, key=KEY, key_name=KEY_NAME, resource=ENDPOINT 
     """Check that a SAS token is well formed, not expired and signed with the key."""
     prefix = "SharedAccessSignature "
     assert token.startswith(prefix)
-    fields = dict(part.split("=", 1) for part in token[len(prefix):].split("&"))
+    fields = dict(part.split("=", 1) for part in token[len(prefix) :].split("&"))
     assert fields["sr"] == quote(resource, safe="").lower()
     assert fields["skn"] == key_name
     expiry = int(fields["se"])
