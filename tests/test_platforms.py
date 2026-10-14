@@ -1,6 +1,7 @@
 """Platforms that changed since 1.x: FCM v1 replaces GCM, MPNS is gone, scheduled times use UTC."""
 
-from datetime import datetime, timedelta, timezone
+import time
+from datetime import datetime, timedelta, timezone, tzinfo
 
 import pytest
 
@@ -68,6 +69,39 @@ def test_windows_type_is_set_after_the_xml_prolog(hub, hub_api, payload):
 
     [call] = hub_api.calls
     assert split_request(call.request)[2]["X-WNS-Type"] == "wns/toast"
+
+
+class NoUtcOffset(tzinfo):
+    """A time zone without a UTC offset. Python treats times in it as naive."""
+
+    def utcoffset(self, dt):
+        return None
+
+    def dst(self, dt):
+        return None
+
+
+@pytest.fixture
+def local_time_zone():
+    """Make the local time zone 5 hours behind UTC during the test."""
+    if not hasattr(time, "tzset"):
+        pytest.skip("Changing the local time zone needs time.tzset")
+    with pytest.MonkeyPatch.context() as patch:
+        patch.setenv("TZ", "EST+5")
+        time.tzset()
+        yield
+    time.tzset()
+
+
+@pytest.mark.usefixtures("local_time_zone")
+@pytest.mark.parametrize("time_zone", [None, NoUtcOffset()], ids=["naive", "no UTC offset"])
+def test_scheduled_time_without_a_utc_offset_is_taken_as_utc(hub, hub_api, time_zone):
+    send_at = datetime(2026, 10, 15, 8, 0, 0, tzinfo=time_zone)
+
+    hub.send_template_notification({"message": "Hello"}, scheduled_time=send_at)
+
+    [call] = hub_api.calls
+    assert split_request(call.request)[2]["ServiceBusNotification-ScheduleTime"] == "2026-10-15T08:00:00"
 
 
 def test_scheduled_time_is_sent_in_utc(hub, hub_api):
