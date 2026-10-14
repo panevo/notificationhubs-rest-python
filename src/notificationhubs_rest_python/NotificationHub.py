@@ -25,7 +25,7 @@ JSON_FORMATS = ("template", "apple", "fcmV1", "adm", "baidu")
 
 # Formats that no longer work, with what to use instead
 RETIRED_FORMATS = {
-    "gcm": "Google shut down the legacy GCM/FCM API on 2024-06-20. Use 'fcmV1' instead.",
+    "gcm": "Notification Hubs stopped supporting the legacy GCM/FCM API on 2024-06-20. Use 'fcmV1' instead.",
     "windowsphone": "Microsoft no longer supports MPNS (Windows Phone).",
 }
 
