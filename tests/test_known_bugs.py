@@ -16,7 +16,6 @@ OTHER_CONNECTION_STRING = (
 )
 
 
-@pytest.mark.xfail(strict=True, reason="1.x stores the credentials on the class, so all hubs share the last ones")
 def test_each_hub_keeps_its_own_credentials(hub_api):
     first = AzureNotificationHub(CONNECTION_STRING, HUB_NAME)
     AzureNotificationHub(OTHER_CONNECTION_STRING, "other-hub")
@@ -28,14 +27,12 @@ def test_each_hub_keeps_its_own_credentials(hub_api):
     assert_valid_sas_token(split_request(call.request)[2]["Authorization"])
 
 
-@pytest.mark.xfail(strict=True, reason="1.x requires exactly three parts in the connection string")
 def test_connection_string_with_trailing_semicolon():
     hub = AzureNotificationHub(CONNECTION_STRING + ";", HUB_NAME)
 
     assert hub.Endpoint == "https://example.servicebus.windows.net/"
 
 
-@pytest.mark.xfail(strict=True, reason="1.x reads the key correctly only when it comes after the key name")
 def test_connection_string_parts_in_any_order(hub_api):
     connection_string = (
         "SharedAccessKey=" + KEY + ";SharedAccessKeyName=" + KEY_NAME + ";Endpoint=sb://example.servicebus.windows.net/"
@@ -58,7 +55,6 @@ def test_scheduled_time_header_format(hub_api):
     assert split_request(call.request)[2]["ServiceBusNotification-ScheduleTime"] == "2026-10-15T08:00:00"
 
 
-@pytest.mark.xfail(strict=True, reason="1.x never checks the status code when debug is on")
 def test_failed_debug_send_raises(failing_hub_api):
     hub = AzureNotificationHub(CONNECTION_STRING, HUB_NAME, debug=1)
 
@@ -66,7 +62,6 @@ def test_failed_debug_send_raises(failing_hub_api):
         hub.send_template_notification({"message": "Hello"})
 
 
-@pytest.mark.xfail(strict=True, reason="1.x sends requests without a timeout")
 def test_requests_have_a_timeout(hub_api):
     hub = AzureNotificationHub(CONNECTION_STRING, HUB_NAME)
 
@@ -76,7 +71,6 @@ def test_requests_have_a_timeout(hub_api):
     assert call.request.req_kwargs.get("timeout") is not None
 
 
-@pytest.mark.xfail(strict=True, reason="1.x returns the live SAS token in the headers")
 def test_returned_headers_do_not_contain_the_sas_token(hub_api):
     hub = AzureNotificationHub(CONNECTION_STRING, HUB_NAME)
 
