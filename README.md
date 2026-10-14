@@ -21,7 +21,7 @@ http://azure.microsoft.com/en-us/documentation/articles/notification-hubs-python
 
 ## Requirements
 
-This package requires Python 3.8+ and version 2.25.0+ of the `requests` package.
+This package requires Python 3.9+ and version 2.25.0+ of the `requests` package.
 
 ## Registration management
 

@@ -8,7 +8,7 @@ import logging
 import re
 from collections import abc
 from datetime import datetime, timezone
-from typing import AbstractSet, Any, Dict, Optional, Tuple, Union
+from typing import Any, Optional, Union
 
 from notificationhubs_rest_python._connection_string import parse_connection_string
 from notificationhubs_rest_python._sas import SasTokenProvider
@@ -33,10 +33,10 @@ RETIRED_FORMATS = {
 WNS_ROOT_ELEMENT = re.compile(r"\s*(?:<\?xml[^>]*\?>\s*)?<(toast|tile|badge)[\s/>]")
 
 # A tag, a tag expression, or a set of tags that is sent as an OR expression
-Tags = Union[str, AbstractSet[str], None]
+Tags = Union[str, abc.Set[str], None]
 
 # The HTTP status and the headers that were sent, with the SAS token redacted
-SendResult = Tuple[int, Dict[str, str]]
+SendResult = tuple[int, dict[str, str]]
 
 
 class AzureNotification:
@@ -58,7 +58,7 @@ class AzureNotification:
 
         # Extra headers to send with this notification, such as X-WNS-Type for Windows or
         # apns-priority for Apple.
-        self.headers: Optional[Dict[str, str]] = None
+        self.headers: Optional[dict[str, str]] = None
 
 
 class AzureNotificationHub:
@@ -168,7 +168,7 @@ class AzureNotificationHub:
         status = self.__make_http_request(url, payload_to_send, headers)
         return status, _redact(headers)
 
-    def __make_http_request(self, url: str, payload: Any, headers: Dict[str, str]) -> int:
+    def __make_http_request(self, url: str, payload: Any, headers: dict[str, str]) -> int:
         logger.debug("Sending notification: POST %s, headers %s", url, _redact(headers))
         response = self._transport.post(url, payload, headers)
         logger.debug(
@@ -333,7 +333,7 @@ def _format_schedule_time(scheduled_time: datetime) -> str:
     return scheduled_time.strftime("%Y-%m-%dT%H:%M:%S")
 
 
-def _redact(headers: Dict[str, str]) -> Dict[str, str]:
+def _redact(headers: dict[str, str]) -> dict[str, str]:
     """Return a copy of the headers with the SAS token hidden."""
     redacted = dict(headers)
     if "Authorization" in redacted:
