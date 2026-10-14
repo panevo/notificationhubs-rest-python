@@ -62,7 +62,7 @@ jobs:
         path: dist/
     - name: Install the built package
       # Installing the wheel into a clean environment checks that its dependencies are declared
-      run: python -m pip install dist/*.whl pytest
+      run: python -m pip install dist/*.whl pytest responses
     - name: Run tests against the installed package
       run: pytest tests
 
