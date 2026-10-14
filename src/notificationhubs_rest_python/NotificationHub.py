@@ -151,6 +151,9 @@ class AzureNotificationHub:
 
         tags: Optional[str]
         if isinstance(tag_or_tag_expression, abc.Set):
+            if not tag_or_tag_expression:
+                # An empty tags header sends the notification to every device
+                raise ValueError("The set of tags must contain at least one tag. Use tags='' to send to all devices.")
             tags = " || ".join(sorted(tag_or_tag_expression))
         else:
             tags = tag_or_tag_expression
