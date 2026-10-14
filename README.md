@@ -16,6 +16,8 @@ This package requires Python 3.9+ and version 2.25.0+ of the `requests` package.
 
 ## Usage
 
+Create a client with the hub's connection string and name. Use the connection string of an access policy that can send, such as `DefaultFullSharedAccessSignature`, from the hub's Access Policies in the Azure portal.
+
 ```python
 from notificationhubs_rest_python import AzureNotificationHub
 
@@ -47,7 +49,7 @@ hub.send_amazon_notification(False, {"data": {"message": "Hello"}}, tags="news")
 
 ### Send options
 
-- `tags`: a tag, a tag expression such as `"news && lang:en"`, or a set of tags, which is sent as an OR expression.
+- `tags`: a tag, a tag expression such as `"news && lang:en"`, or a set of tags, which is sent as an OR expression. Without tags, the notification is sent to all devices.
 - `is_direct=True` with `device_handle="..."`: send to one device instead of to tags. Not available for template notifications.
 - `scheduled_time`: a `datetime` when the notification should be sent. A time without a timezone is taken as UTC. Scheduled sends need the Standard tier.
 - `skip_send=True`: build the request without sending it.
@@ -57,7 +59,7 @@ Every send returns `(status, headers)`: the HTTP status, 201 or 200 on success, 
 
 ### Errors, retries and timeouts
 
-A failed request raises `NotificationHubError`, a subclass of `Exception`, with the status code and the service's error code and detail:
+An error response raises `NotificationHubError`, a subclass of `Exception`, with the status code and the service's error code and detail:
 
 ```python
 from notificationhubs_rest_python import NotificationHubError
@@ -68,7 +70,11 @@ except NotificationHubError as error:
     print(error.status_code, error.code, error.detail)
 ```
 
-Throttled requests (429) and transient errors (408, 500, 503, 504, and 403 with `Retry-After`) are retried up to 3 times with exponential backoff. A `Retry-After` header from the service is honoured, up to 60 seconds. Requests time out after 10 seconds when connecting and 30 seconds when waiting for the response. Both can be changed:
+Throttled requests (429) and transient errors (408, 500, 503, 504, and 403 with `Retry-After`) are retried up to 3 times with exponential backoff. A `Retry-After` header from the service is honoured, up to 60 seconds. A retry can send a notification twice if the service accepted it but still returned a 500 or 504.
+
+Each attempt times out after 10 seconds when connecting and 30 seconds when waiting for the response. Timeouts and connection errors are not retried, and raise the `requests` exceptions, such as `requests.Timeout` and `requests.ConnectionError`.
+
+The timeouts and the number of retries can be changed. `max_retries=0` turns retries off:
 
 ```python
 hub = AzureNotificationHub(connection_string, "my-hub", timeout=(5, 15), max_retries=0)
@@ -76,7 +82,7 @@ hub = AzureNotificationHub(connection_string, "my-hub", timeout=(5, 15), max_ret
 
 ### Logging
 
-Requests, responses and the outcome of test sends are logged to the `notificationhubs_rest_python` logger. The SAS token is never logged.
+The package logs to the `notificationhubs_rest_python` logger: requests and responses at `DEBUG` level, the outcome of test sends at `INFO` and retries at `WARNING`. The SAS token is never logged. Python only shows warnings and errors until logging is configured, for example with `logging.basicConfig(level=logging.INFO)`.
 
 ### SAS tokens
 
@@ -88,14 +94,16 @@ The package does not manage registrations or installations. To manage them, call
 
 ## Upgrading from 1.x
 
-- `send_google_notification` sends FCM v1 notifications, because Google shut down the legacy GCM/FCM API. Wrap the payload in a `message` object, and register Android devices as FCM v1 devices.
+- `send_google_notification` sends FCM v1 notifications, because Google shut down the legacy GCM/FCM API. Wrap the payload in a `message` object, otherwise it raises a `ValueError`, and register Android devices as FCM v1 devices.
 - `send_windows_phone_notification` raises `NotImplementedError`, because Microsoft no longer supports MPNS.
-- Errors are raised as `NotificationHubError`. It subclasses `Exception`, so existing `except Exception` blocks keep working.
+- Error responses raise `NotificationHubError`, also with `debug` on, where 1.x printed the response and returned its status. It subclasses `Exception`, so existing `except Exception` blocks keep working.
 - Debug output goes to the `notificationhubs_rest_python` logger instead of being printed.
+- Requests time out, and throttled requests and transient errors are retried, as described above.
+- Creating a hub without a hub name raises a `ValueError`.
 - The headers returned by the send methods no longer contain the SAS token.
 - Python 3.8 is no longer supported.
 
-See the [changelog](CHANGELOGS.md) for all changes.
+See the [changelog](https://github.com/panevo/notificationhubs-rest-python/blob/main/CHANGELOGS.md) for all changes.
 
 ## Development
 

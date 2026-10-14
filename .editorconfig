@@ -27,9 +27,9 @@ indent_size = 4
 indent_size = 4
 end_of_line = lf
 
-# Docstrings and comments use max_line_length = 79
+# The same line length as ruff in pyproject.toml
 [*.py]
-max_line_length = 119
+max_line_length = 120
 
 [*.php]
 indent_size = 4

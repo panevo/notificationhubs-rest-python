@@ -2,7 +2,7 @@
 
 from concurrent.futures import ThreadPoolExecutor
 
-from conftest import CONNECTION_STRING, ENDPOINT, HUB_NAME, assert_valid_sas_token
+from conftest import CONNECTION_STRING, ENDPOINT, HUB_NAME, assert_valid_sas_token, split_request
 from notificationhubs_rest_python.NotificationHub import AzureNotificationHub
 
 
@@ -38,6 +38,26 @@ def test_sas_tokens_are_valid_across_threads():
 
     for token in tokens:
         assert_valid_sas_token(token)
+
+
+def test_sas_token_follows_changes_to_the_hub_attributes(hub_api):
+    hub = AzureNotificationHub(CONNECTION_STRING, HUB_NAME)
+    hub.generate_sas_token()
+    hub.Endpoint = "https://other.servicebus.windows.net/"
+    hub.HubName = "other-hub"
+    hub.SasKeyName = "OtherKeyName"
+    hub.SasKeyValue = "b3RoZXIta2V5"
+
+    hub.send_template_notification({"message": "Hello"})
+
+    [call] = hub_api.calls
+    assert call.request.url.startswith("https://other.servicebus.windows.net/other-hub/")
+    assert_valid_sas_token(
+        split_request(call.request)[2]["Authorization"],
+        key="b3RoZXIta2V5",
+        key_name="OtherKeyName",
+        resource="https://other.servicebus.windows.net/other-hub",
+    )
 
 
 def test_connection_string_with_empty_values_is_accepted():
