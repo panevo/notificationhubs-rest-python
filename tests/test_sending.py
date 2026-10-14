@@ -75,6 +75,23 @@ def test_empty_tag_set_raises_instead_of_sending_to_everyone(hub, hub_api, tags)
     assert len(hub_api.calls) == 0
 
 
+@pytest.mark.parametrize("tags", [{""}, {"", "news"}])
+def test_empty_tag_in_a_set_raises(hub, hub_api, tags):
+    with pytest.raises(ValueError, match="no empty tags"):
+        hub.send_template_notification({"message": "Hello"}, tags=tags)
+
+    assert len(hub_api.calls) == 0
+
+
+@pytest.mark.parametrize("tags", [[], (), ["news"]])
+def test_tags_of_another_type_raise(hub, hub_api, tags):
+    # An empty list would otherwise send the notification to all devices
+    with pytest.raises(TypeError, match="Invalid tags"):
+        hub.send_template_notification({"message": "Hello"}, tags=tags)
+
+    assert len(hub_api.calls) == 0
+
+
 def test_template_payload_with_non_ascii_text(hub, hub_api):
     properties = {"site_name": "Café ☕ 東京"}
 
