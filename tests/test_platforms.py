@@ -99,13 +99,19 @@ def test_scheduled_time_without_a_utc_offset_is_taken_as_utc(hub, hub_api, time_
     assert split_request(call.request)[2]["ServiceBusNotification-ScheduleTime"] == "2026-10-15T08:00:00"
 
 
-def test_scheduled_time_is_sent_in_utc(hub, hub_api):
-    send_at = datetime(2026, 10, 15, 10, 0, 0, tzinfo=timezone(timedelta(hours=2)))
-
+@pytest.mark.parametrize(
+    ("send_at", "header"),
+    [
+        (datetime(2026, 10, 15, 8, 0, 0, 999999, tzinfo=timezone.utc), "2026-10-15T08:00:00"),
+        (datetime(2026, 10, 15, 1, 30, tzinfo=timezone(timedelta(hours=2))), "2026-10-14T23:30:00"),
+        (datetime(2026, 10, 15, 20, 0, tzinfo=timezone(timedelta(hours=-6))), "2026-10-16T02:00:00"),
+    ],
+)
+def test_scheduled_time_is_sent_in_utc(hub, hub_api, send_at, header):
     hub.send_template_notification({"message": "Hello"}, scheduled_time=send_at)
 
     [call] = hub_api.calls
-    assert split_request(call.request)[2]["ServiceBusNotification-ScheduleTime"] == "2026-10-15T08:00:00"
+    assert split_request(call.request)[2]["ServiceBusNotification-ScheduleTime"] == header
 
 
 @pytest.mark.parametrize(
@@ -131,19 +137,3 @@ def test_google_data_message(hub, hub_api):
 def test_windows_phone_format_is_rejected():
     with pytest.raises(ValueError, match="MPNS"):
         AzureNotification("windowsphone", "<wp:Notification/>")
-
-
-@pytest.mark.parametrize(
-    ("send_at", "header"),
-    [
-        (datetime(2026, 10, 15, 8, 0, 0, 999999), "2026-10-15T08:00:00"),
-        (datetime(2026, 10, 15, 1, 30, tzinfo=timezone(timedelta(hours=2))), "2026-10-14T23:30:00"),
-        (datetime(2026, 10, 15, 20, 0, tzinfo=timezone(timedelta(hours=-6))), "2026-10-16T02:00:00"),
-        (datetime(2026, 10, 15, 8, 0, tzinfo=timezone.utc), "2026-10-15T08:00:00"),
-    ],
-)
-def test_scheduled_time_header(hub, hub_api, send_at, header):
-    hub.send_template_notification({"message": "Hello"}, scheduled_time=send_at)
-
-    [call] = hub_api.calls
-    assert split_request(call.request)[2]["ServiceBusNotification-ScheduleTime"] == header

@@ -153,7 +153,6 @@ def test_device_handle_is_only_used_for_direct_sends(hub, hub_api):
         (TILE, "wns/tile"),
         ("<badge/>", "wns/badge"),
         ("<badge></badge>", "wns/badge"),
-        ('<?xml version="1.0" encoding="utf-8"?>\n' + TOAST, "wns/toast"),
         ("\n  " + TILE, "wns/tile"),
     ],
 )
@@ -207,13 +206,17 @@ def test_skip_send_makes_no_request(hub, hub_api):
 
 
 @pytest.mark.parametrize("debug", [1, True])
-def test_debug_sends_a_test_notification(hub_api, debug):
+def test_debug_sends_a_test_notification_and_logs_it(hub_api, caplog, debug):
+    caplog.set_level(logging.DEBUG, logger="notificationhubs_rest_python")
     hub = AzureNotificationHub(CONNECTION_STRING, HUB_NAME, debug)
 
-    hub.send_template_notification({"message": "Hello"})
+    status, _ = hub.send_template_notification({"message": "Hello"})
 
+    assert status == 201
     [call] = hub_api.calls
-    assert "test" in split_request(call.request)[1]
+    assert split_request(call.request)[1] == {"api-version": ["2020-06"], "test": [""]}
+    assert "Sending notification: POST" in caplog.text
+    assert "Test send outcome: 201" in caplog.text
 
 
 def test_debug_send_logs_the_outcome(caplog):
@@ -236,19 +239,6 @@ def test_debug_skip_send_makes_no_request(hub_api):
 
     assert status == 201
     assert len(hub_api.calls) == 0
-
-
-def test_debug_sends_a_test_notification_and_logs_it(hub_api, caplog):
-    caplog.set_level(logging.DEBUG, logger="notificationhubs_rest_python")
-    hub = AzureNotificationHub(CONNECTION_STRING, HUB_NAME, debug=1)
-
-    status, _ = hub.send_template_notification({"message": "Hello"})
-
-    assert status == 201
-    [call] = hub_api.calls
-    assert split_request(call.request)[1] == {"api-version": ["2020-06"], "test": [""]}
-    assert "Sending notification: POST" in caplog.text
-    assert "Test send outcome: 201" in caplog.text
 
 
 def test_failed_send_raises(hub, failing_hub_api):

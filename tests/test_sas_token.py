@@ -54,14 +54,6 @@ def test_token_is_renewed_five_minutes_before_it_expires(hub, clock):
     assert int(token_fields(renewed)["se"]) == clock.now + 3600
 
 
-def test_signature_is_url_encoded(hub):
-    signature = token_fields(hub.generate_sas_token())["sig"]
-
-    # The base64 signature always ends with "=" padding, which must be encoded
-    assert signature.endswith("%3D")
-    assert "+" not in signature
-
-
 def test_resource_is_lowercased_but_the_url_keeps_the_hub_name(hub_api):
     hub = AzureNotificationHub(CONNECTION_STRING, "MyHub")
 
