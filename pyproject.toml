@@ -54,7 +54,6 @@ lint = [
     "mypy>=1.18",
     "ruff>=0.14",
     "types-requests",
-    "types-six",
 ]
 
 [tool.pytest.ini_options]
@@ -88,3 +87,4 @@ select = ["E", "W", "F", "I", "B", "UP", "PT"]
 
 [tool.mypy]
 files = ["src"]
+strict = true
