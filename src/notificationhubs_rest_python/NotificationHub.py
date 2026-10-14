@@ -5,10 +5,10 @@ Reference: https://learn.microsoft.com/en-us/rest/api/notificationhubs/
 
 import json
 import logging
-import re
 from collections import abc
 from datetime import datetime, timezone
 from typing import Any, Optional, Union
+from xml.etree import ElementTree
 
 from notificationhubs_rest_python._connection_string import parse_connection_string
 from notificationhubs_rest_python._sas import SasTokenProvider
@@ -30,7 +30,7 @@ RETIRED_FORMATS = {
 }
 
 # The root element of a Windows (WNS) payload decides its X-WNS-Type header
-WNS_ROOT_ELEMENT = re.compile(r"\s*(?:<\?xml[^>]*\?>\s*)?<(toast|tile|badge)[\s/>]")
+WNS_TYPES = {"toast": "wns/toast", "tile": "wns/tile", "badge": "wns/badge"}
 
 # A tag, a tag expression, or a set of tags that is sent as an OR expression
 Tags = Union[str, abc.Set[str], None]
@@ -300,9 +300,9 @@ class AzureNotificationHub:
     ) -> SendResult:
         nh = AzureNotification("windows", payload)
 
-        root_element = WNS_ROOT_ELEMENT.match(payload)
-        if root_element:
-            nh.headers = {"X-WNS-Type": "wns/" + root_element.group(1)}
+        wns_type = _wns_type(payload)
+        if wns_type is not None:
+            nh.headers = {"X-WNS-Type": wns_type}
 
         return self.__send_notification(
             nh,
@@ -324,6 +324,15 @@ class AzureNotificationHub:
         return self.__send_notification(
             nh, is_direct=False, tag_or_tag_expression=tags, scheduled_time=scheduled_time, skip_send=skip_send
         )
+
+
+def _wns_type(payload: str) -> Optional[str]:
+    """Return the X-WNS-Type header for a Windows payload, from the root element of its XML."""
+    try:
+        root = ElementTree.fromstring(payload)
+    except ElementTree.ParseError:
+        return None
+    return WNS_TYPES.get(root.tag)
 
 
 def _format_schedule_time(scheduled_time: datetime) -> str:
