@@ -4,6 +4,7 @@ import hmac
 import json
 import re
 import time
+from types import SimpleNamespace
 from urllib.parse import parse_qs, quote, unquote, urlsplit
 
 import pytest
@@ -17,6 +18,23 @@ CONNECTION_STRING = (
     "Endpoint=sb://example.servicebus.windows.net/;SharedAccessKeyName=" + KEY_NAME + ";SharedAccessKey=" + KEY
 )
 ANY_HUB_URL = re.compile(r"https://[a-z]+\.servicebus\.windows\.net/.*")
+
+
+@pytest.fixture
+def hub():
+    from notificationhubs_rest_python import AzureNotificationHub
+
+    return AzureNotificationHub(CONNECTION_STRING, HUB_NAME)
+
+
+@pytest.fixture
+def sleeps(monkeypatch):
+    """Record retry delays instead of sleeping."""
+    delays = []
+    monkeypatch.setattr(
+        "notificationhubs_rest_python._transport.time", SimpleNamespace(sleep=delays.append, time=time.time)
+    )
+    return delays
 
 
 @pytest.fixture
