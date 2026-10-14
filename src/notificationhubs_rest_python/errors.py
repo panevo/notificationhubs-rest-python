@@ -33,7 +33,10 @@ class NotificationHubError(Exception):
         try:
             root = ElementTree.fromstring(response.text)
         except ElementTree.ParseError:
-            pass
+            # Some errors, such as a wrong key, come as plain text instead of XML
+            text = response.text.strip()
+            if text and not text.startswith("<"):
+                detail = text
         else:
             code = root.findtext("Code")
             detail = root.findtext("Detail")
