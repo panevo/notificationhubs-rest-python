@@ -7,6 +7,11 @@ from conftest import ANY_HUB_URL
 from notificationhubs_rest_python import NotificationHubError
 from notificationhubs_rest_python.errors import NotificationHubError as ErrorFromModule
 
+XML_ERROR = (
+    '<?xml version="1.0" encoding="utf-8"?>'
+    "<Error><Code>400</Code><Detail>The payload is invalid.TrackingId:1234</Detail></Error>"
+)
+
 
 def fail_with(hub, status, body):
     with responses.RequestsMock() as mock:
@@ -16,12 +21,8 @@ def fail_with(hub, status, body):
     return error.value
 
 
-def test_error_with_the_service_details(hub):
-    body = (
-        '<?xml version="1.0" encoding="utf-8"?>'
-        "<Error><Code>400</Code><Detail>The payload is invalid.TrackingId:1234</Detail></Error>"
-    )
-
+@pytest.mark.parametrize("body", [XML_ERROR, "\r\n" + XML_ERROR + "\r\n"], ids=["xml", "surrounding whitespace"])
+def test_error_with_the_service_details(hub, body):
     error = fail_with(hub, 400, body)
 
     assert (error.status_code, error.reason, error.code) == (400, "Bad Request", "400")
