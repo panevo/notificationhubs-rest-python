@@ -26,6 +26,13 @@ class FakeNotificationHubs(BaseHTTPRequestHandler):
         pass
 
 
+@pytest.fixture(autouse=True)
+def no_proxy(monkeypatch):
+    """Connect to the local server directly, also when a proxy is set in the environment."""
+    for name in ("no_proxy", "NO_PROXY"):
+        monkeypatch.setenv(name, "127.0.0.1")
+
+
 @pytest.fixture
 def server():
     server = ThreadingHTTPServer(("127.0.0.1", 0), FakeNotificationHubs)
