@@ -1,0 +1,45 @@
+[build-system]
+# hatchling 1.27 is the last release that supports building on Python 3.8
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+
+[project]
+name = "notificationhubs-rest-python"
+version = "1.0.3"
+description = "A Python library for sending notifications using Azure Notification Hubs REST API."
+readme = "README.md"
+license = "Apache-2.0"
+license-files = ["LICENSE"]
+authors = [{ name = "Panevo Services Ltd.", email = "info@panevo.com" }]
+requires-python = ">=3.8"
+dependencies = [
+    "requests>=2.25.0",
+    "six",
+]
+classifiers = [
+    "Intended Audience :: Developers",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+]
+
+[project.urls]
+Homepage = "https://github.com/panevo/notificationhubs-rest-python"
+Changelog = "https://github.com/panevo/notificationhubs-rest-python/blob/main/CHANGELOGS.md"
+
+[tool.hatch.build.targets.wheel]
+packages = ["notificationhubs_rest_python"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "/notificationhubs_rest_python",
+    "/tests",
+    "/CHANGELOGS.md",
+    "/SECURITY.md",
+]

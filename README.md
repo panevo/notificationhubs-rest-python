@@ -1,6 +1,6 @@
 # Notification Hubs REST wrapper for Python
 
-![PyPI](https://img.shields.io/pypi/v/notificationhubs-rest-python?style=flat-square)
+![PyPI](https://img.shields.io/pypi/v/notificationhubs-rest-python?style=flat-square&cacheSeconds=3600)
 
 This is an implementation of a REST wrapper for sending notifications with Notification Hubs using the [REST APIs of Notification Hubs](http://msdn.microsoft.com/en-us/library/dn495827.aspx) from a Python back-end. The useage of this code is officially recommended by Microsoft in the [documentation](https://learn.microsoft.com/en-us/azure/notification-hubs/notification-hubs-python-push-notification-tutorial#client-interface).
 
