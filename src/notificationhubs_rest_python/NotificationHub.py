@@ -119,10 +119,12 @@ class AzureNotificationHub:
     ) -> SendResult:
         if notification.format in JSON_FORMATS:
             content_type = "application/json"
-            payload_to_send = json.dumps(notification.payload)
+            body = json.dumps(notification.payload)
         else:
             content_type = "application/xml"
-            payload_to_send = notification.payload
+            body = notification.payload
+        # Send UTF-8: requests with urllib3 1.x would send a str body as Latin-1
+        payload_to_send = body.encode("utf-8")
 
         headers = {
             "Content-type": content_type,
@@ -168,7 +170,7 @@ class AzureNotificationHub:
         status = self.__make_http_request(url, payload_to_send, headers)
         return status, _redact(headers)
 
-    def __make_http_request(self, url: str, payload: Any, headers: dict[str, str]) -> int:
+    def __make_http_request(self, url: str, payload: bytes, headers: dict[str, str]) -> int:
         logger.debug("Sending notification: POST %s, headers %s", url, _redact(headers))
         response = self._transport.post(url, payload, headers)
         logger.debug(

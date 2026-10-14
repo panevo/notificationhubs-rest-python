@@ -27,7 +27,7 @@ class Transport:
         self.base_delay = base_delay
         self.max_delay = max_delay
 
-    def post(self, url: str, data: Union[str, bytes], headers: Mapping[str, str]) -> requests.Response:
+    def post(self, url: str, data: bytes, headers: Mapping[str, str]) -> requests.Response:
         attempt = 0
         while True:
             response = self.session.post(url, data=data, headers=headers, timeout=self.timeout)
