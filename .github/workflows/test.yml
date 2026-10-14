@@ -37,7 +37,7 @@ jobs:
         if-no-files-found: error
 
   tests:
-    name: Python ${{ matrix.python }}
+    name: Python ${{ matrix.python }}${{ matrix.urllib3 && format(' / urllib3 {0}', matrix.urllib3) || '' }}
     needs: package
     runs-on: ubuntu-latest
     permissions:
@@ -46,6 +46,11 @@ jobs:
       fail-fast: false
       matrix:
         python: ['3.9', '3.10', '3.11', '3.12', '3.13', '3.14']
+        urllib3: ['']
+        include:
+          # requests still allows urllib3 1.x, which sends request bodies differently
+          - python: '3.9'
+            urllib3: '1.26'
 
     steps:
     - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
@@ -62,15 +67,18 @@ jobs:
         path: dist/
     - name: Install the built package
       # Installing the wheel into a clean environment checks that its dependencies are declared
+      env:
+        URLLIB3: ${{ matrix.urllib3 }}
       run: |
         python -m pip install --upgrade pip
         python -m pip install dist/*.whl --group test
+        if [ -n "$URLLIB3" ]; then python -m pip install "urllib3==$URLLIB3.*"; fi
     - name: Run tests against the installed package
       run: python -m coverage run -m pytest
     - name: Upload coverage data
       uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7.0.2
       with:
-        name: coverage-${{ matrix.python }}
+        name: coverage-${{ matrix.python }}-urllib3-${{ matrix.urllib3 || 'latest' }}
         path: .coverage.*
         include-hidden-files: true
         if-no-files-found: error

@@ -340,7 +340,4 @@ def _format_schedule_time(scheduled_time: datetime) -> str:
 
 def _redact(headers: dict[str, str]) -> dict[str, str]:
     """Return a copy of the headers with the SAS token hidden."""
-    redacted = dict(headers)
-    if "Authorization" in redacted:
-        redacted["Authorization"] = REDACTED
-    return redacted
+    return {**headers, "Authorization": REDACTED}
