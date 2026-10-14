@@ -3,7 +3,7 @@ import hashlib
 import hmac
 import threading
 import time
-from typing import Optional, Tuple
+from typing import Optional
 from urllib.parse import quote
 
 
@@ -17,7 +17,7 @@ class SasTokenProvider:
         self._lifetime = lifetime
         self._renew_before = renew_before
         self._lock = threading.Lock()
-        self._credentials: Optional[Tuple[str, str, str]] = None
+        self._credentials: Optional[tuple[str, str, str]] = None
         self._token = ""
         self._expiry = 0
 

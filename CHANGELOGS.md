@@ -17,6 +17,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The headers returned by the send methods no longer contain the SAS token
 - SAS tokens are reused until they are close to expiring, and are available as `generate_sas_token()`. The private `_AzureNotificationHub__generate_sas_token()` keeps working
 - Add type hints
+- `send_google_notification` sends Firebase Cloud Messaging (FCM) v1 notifications (the `fcmV1` format), because Notification Hubs stopped supporting the legacy GCM/FCM API on 2024-06-20, and Google has since shut it down. The payload must use the FCM v1 format, wrapped in a `message` object, otherwise it raises a `ValueError`
+- `AzureNotification` accepts the `fcmV1` format, and raises a `ValueError` for the retired `gcm` and `windowsphone` formats
+- `send_windows_phone_notification` raises `NotImplementedError`, because Microsoft no longer supports MPNS
+- Scheduled sends send the time in the correct format and in UTC. A time without a timezone is taken as UTC
+- `send_windows_notification` sets the `X-WNS-Type` header from the root element of the XML payload, also when it has attributes, such as `<badge value="1"/>`
+- Drop support for Python 3.8 (end of life) and the dependency on `six`
 
 ## [1.0.3] - 2026-10-14
 

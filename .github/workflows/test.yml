@@ -45,7 +45,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python: ['3.8', '3.9', '3.10', '3.11', '3.12', '3.13', '3.14']
+        python: ['3.9', '3.10', '3.11', '3.12', '3.13', '3.14']
 
     steps:
     - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
@@ -67,9 +67,9 @@ jobs:
         python -m pip install dist/*.whl
         python -c "import notificationhubs_rest_python.NotificationHub"
     - name: Install the test dependencies
-      # These are the versions from the test dependency group in pyproject.toml, which pip can
-      # only install from version 25.1, and that does not support Python 3.8
-      run: python -m pip install "coverage[toml]>=7.6" "pytest>=8" "responses>=0.25"
+      run: |
+        python -m pip install --upgrade pip
+        python -m pip install --group test
     - name: Run tests against the installed package
       run: python -m coverage run -m pytest
     - name: Upload coverage data

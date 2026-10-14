@@ -1,8 +1,9 @@
 import logging
 import random
 import time
+from collections.abc import Mapping
 from email.utils import parsedate_to_datetime
-from typing import Mapping, Optional, Tuple, Union
+from typing import Optional, Union
 
 import requests
 
@@ -12,7 +13,7 @@ logger = logging.getLogger("notificationhubs_rest_python")
 # service sends Retry-After, which it does when a quota is temporarily exceeded.
 RETRY_STATUS_CODES = {408, 429, 500, 503, 504}
 
-Timeout = Union[float, Tuple[float, float]]
+Timeout = Union[float, tuple[float, float]]
 
 
 class Transport:

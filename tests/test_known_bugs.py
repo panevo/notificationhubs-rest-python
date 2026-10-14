@@ -1,8 +1,4 @@
-"""Bugs in the 1.x code, written as the behaviour we want.
-
-Each test is marked as an expected failure. The change that fixes a bug removes its marker,
-so the test then has to pass.
-"""
+"""Bugs in the 1.x code that 2.0 fixes, written as the behaviour we want."""
 
 import logging
 from datetime import datetime
@@ -46,7 +42,6 @@ def test_connection_string_parts_in_any_order(hub_api):
     assert_valid_sas_token(split_request(call.request)[2]["Authorization"])
 
 
-@pytest.mark.xfail(strict=True, reason="1.x formats the time with literal quotes around the T")
 def test_scheduled_time_header_format(hub_api):
     hub = AzureNotificationHub(CONNECTION_STRING, HUB_NAME)
 
@@ -90,7 +85,6 @@ def test_returned_headers_do_not_contain_the_sas_token(hub_api):
     assert not headers["Authorization"].startswith("SharedAccessSignature")
 
 
-@pytest.mark.xfail(strict=True, reason="1.x only recognises <toast>, <tile> and <badge> without attributes")
 @pytest.mark.parametrize(
     ("payload", "wns_type"),
     [('<badge value="1"/>', "wns/badge"), ('<toast launch="args"><visual/></toast>', "wns/toast")],

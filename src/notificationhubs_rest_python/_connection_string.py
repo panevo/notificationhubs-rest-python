@@ -1,7 +1,7 @@
-from typing import Optional, Tuple
+from typing import Optional
 
 
-def parse_connection_string(connection_string: Optional[str]) -> Tuple[str, str, str]:
+def parse_connection_string(connection_string: Optional[str]) -> tuple[str, str, str]:
     """Return the endpoint, key name and key from a Notification Hubs connection string.
 
     The parts can come in any order and a trailing ``;`` is allowed. The ``sb://`` endpoint is
