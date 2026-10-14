@@ -337,7 +337,7 @@ def _wns_type(payload: str) -> Optional[str]:
 
 def _format_schedule_time(scheduled_time: datetime) -> str:
     """Format the time for the ScheduleTime header in UTC. A time without a timezone is taken as UTC."""
-    if scheduled_time.tzinfo is not None:
+    if scheduled_time.utcoffset() is not None:
         scheduled_time = scheduled_time.astimezone(timezone.utc)
     return scheduled_time.strftime("%Y-%m-%dT%H:%M:%S")
 
