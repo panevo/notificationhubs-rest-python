@@ -43,3 +43,32 @@ include = [
     "/CHANGELOGS.md",
     "/SECURITY.md",
 ]
+
+[dependency-groups]
+test = [
+    "coverage[toml]>=7.6",
+    "pytest>=8",
+    "responses>=0.25",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = ["-ra", "--strict-config", "--strict-markers"]
+xfail_strict = true
+# Any warning fails the tests
+filterwarnings = ["error"]
+
+[tool.coverage.run]
+branch = true
+parallel = true
+source_pkgs = ["notificationhubs_rest_python"]
+
+[tool.coverage.paths]
+source = [
+    "src/notificationhubs_rest_python",
+    "*/site-packages/notificationhubs_rest_python",
+]
+
+[tool.coverage.report]
+fail_under = 90
+show_missing = true
