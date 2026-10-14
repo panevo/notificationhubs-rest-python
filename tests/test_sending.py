@@ -37,8 +37,7 @@ def test_template_send_with_tag_expression(hub, hub_api):
     [call] = hub_api.calls
     path, query, headers, _ = split_request(call.request)
     assert path == "/hub/messages/"
-    assert "api-version" in query
-    assert "direct" not in query
+    assert query == {"api-version": ["2015-04"]}
     assert headers["ServiceBusNotification-Format"] == "template"
     assert headers["ServiceBusNotification-Tags"] == tags
     assert json_body(call.request) == {"site_name": "Plant 1"}
@@ -74,7 +73,7 @@ def test_direct_send(hub, hub_api):
     [call] = hub_api.calls
     path, query, headers, _ = split_request(call.request)
     assert path == "/hub/messages/"
-    assert "direct" in query
+    assert query == {"direct": [""], "api-version": ["2015-04"]}
     assert headers["ServiceBusNotification-DeviceHandle"] == "device-token"
 
 
