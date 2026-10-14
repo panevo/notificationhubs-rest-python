@@ -119,10 +119,12 @@ class AzureNotificationHub:
     ) -> SendResult:
         if notification.format in JSON_FORMATS:
             content_type = "application/json"
-            payload_to_send = json.dumps(notification.payload)
+            body = json.dumps(notification.payload)
         else:
             content_type = "application/xml"
-            payload_to_send = notification.payload
+            body = notification.payload
+        # Send UTF-8: requests with urllib3 1.x would send a str body as Latin-1
+        payload_to_send = body.encode("utf-8")
 
         headers = {
             "Content-type": content_type,
@@ -149,9 +151,20 @@ class AzureNotificationHub:
 
         tags: Optional[str]
         if isinstance(tag_or_tag_expression, abc.Set):
+            if not tag_or_tag_expression or "" in tag_or_tag_expression:
+                # An empty tags header sends the notification to every device
+                raise ValueError(
+                    "The set of tags must contain at least one tag and no empty tags. "
+                    "Use tags='' to send to all devices."
+                )
             tags = " || ".join(sorted(tag_or_tag_expression))
-        else:
+        elif tag_or_tag_expression is None or isinstance(tag_or_tag_expression, str):
             tags = tag_or_tag_expression
+        else:
+            raise TypeError(
+                "Invalid tags: expected a tag, a tag expression or a set of tags, not "
+                + type(tag_or_tag_expression).__name__
+            )
         if tags:
             headers[self.TAGS_HEADER_NAME] = tags
 
@@ -168,7 +181,7 @@ class AzureNotificationHub:
         status = self.__make_http_request(url, payload_to_send, headers)
         return status, _redact(headers)
 
-    def __make_http_request(self, url: str, payload: Any, headers: dict[str, str]) -> int:
+    def __make_http_request(self, url: str, payload: bytes, headers: dict[str, str]) -> int:
         logger.debug("Sending notification: POST %s, headers %s", url, _redact(headers))
         response = self._transport.post(url, payload, headers)
         logger.debug(
@@ -344,7 +357,4 @@ def _format_schedule_time(scheduled_time: datetime) -> str:
 
 def _redact(headers: dict[str, str]) -> dict[str, str]:
     """Return a copy of the headers with the SAS token hidden."""
-    redacted = dict(headers)
-    if "Authorization" in redacted:
-        redacted["Authorization"] = REDACTED
-    return redacted
+    return {**headers, "Authorization": REDACTED}

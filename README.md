@@ -49,7 +49,7 @@ hub.send_amazon_notification(False, {"data": {"message": "Hello"}}, tags="news")
 
 ### Send options
 
-- `tags`: a tag, a tag expression such as `"news && lang:en"`, or a set of tags, which is sent as an OR expression. Without tags, the notification is sent to all devices.
+- `tags`: a tag, a tag expression such as `"news && lang:en"`, or a set of tags, which is sent as an OR expression. Without tags, the notification is sent to all devices. An empty set of tags, or a set with an empty tag, raises a `ValueError` instead.
 - `is_direct=True` with `device_handle="..."`: send to one device instead of to tags. Not available for template notifications.
 - `scheduled_time`: a `datetime` when the notification should be sent. A time without a timezone is taken as UTC. Scheduled sends need the Standard tier.
 - `skip_send=True`: build the request without sending it.
@@ -100,6 +100,7 @@ The package does not manage registrations or installations. To manage them, call
 - Debug output goes to the `notificationhubs_rest_python` logger instead of being printed.
 - Requests time out, and throttled requests and transient errors are retried, as described above.
 - Creating a hub without a hub name raises a `ValueError`.
+- An empty set of tags raises a `ValueError`, where 1.x sent the notification to all devices.
 - The headers returned by the send methods no longer contain the SAS token.
 - Python 3.8 is no longer supported.
 

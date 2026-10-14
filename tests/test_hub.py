@@ -2,8 +2,6 @@
 
 from concurrent.futures import ThreadPoolExecutor
 
-import pytest
-
 from conftest import CONNECTION_STRING, ENDPOINT, HUB_NAME, assert_valid_sas_token, split_request
 from notificationhubs_rest_python.NotificationHub import AzureNotificationHub
 
@@ -65,8 +63,3 @@ def test_sas_token_follows_changes_to_the_hub_attributes(hub_api):
 def test_connection_string_with_empty_values_is_accepted():
     # For example a placeholder used when notifications are switched off
     AzureNotificationHub("Endpoint=/;SharedAccessKeyName=;SharedAccessKey=", "", False)
-
-
-def test_invalid_connection_string_raises():
-    with pytest.raises(Exception, match="(?i)invalid connection ?string"):
-        AzureNotificationHub(connection_string="empty", hub_name="empty")

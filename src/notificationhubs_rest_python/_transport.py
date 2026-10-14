@@ -1,7 +1,9 @@
 import logging
+import math
 import random
 import time
 from collections.abc import Mapping
+from datetime import timezone
 from email.utils import parsedate_to_datetime
 from typing import Optional, Union
 
@@ -26,7 +28,7 @@ class Transport:
         self.base_delay = base_delay
         self.max_delay = max_delay
 
-    def post(self, url: str, data: Union[str, bytes], headers: Mapping[str, str]) -> requests.Response:
+    def post(self, url: str, data: bytes, headers: Mapping[str, str]) -> requests.Response:
         attempt = 0
         while True:
             response = self.session.post(url, data=data, headers=headers, timeout=self.timeout)
@@ -59,11 +61,16 @@ class Transport:
         if value is None:
             return None
         try:
-            return max(float(value), 0.0)
+            seconds = float(value)
         except ValueError:
             pass
+        else:
+            return max(seconds, 0.0) if math.isfinite(seconds) else None
         try:
             retry_at = parsedate_to_datetime(value)
         except (TypeError, ValueError):
             return None
+        if retry_at.tzinfo is None:
+            # HTTP dates are in UTC. Python returns dates in the asctime format or with -0000 without a time zone
+            retry_at = retry_at.replace(tzinfo=timezone.utc)
         return max(retry_at.timestamp() - time.time(), 0.0)
