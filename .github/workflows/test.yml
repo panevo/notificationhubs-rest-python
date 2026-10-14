@@ -61,10 +61,15 @@ jobs:
         name: dist
         path: dist/
     - name: Install the built package
-      # Installing the wheel into a clean environment checks that its dependencies are declared
+      # Installing and importing the wheel in a clean environment checks that its dependencies are declared.
+      # This runs before the test dependencies are installed, because responses also installs requests
+      run: |
+        python -m pip install dist/*.whl
+        python -c "import notificationhubs_rest_python.NotificationHub"
+    - name: Install the test dependencies
       run: |
         python -m pip install --upgrade pip
-        python -m pip install dist/*.whl --group test
+        python -m pip install --group test
     - name: Run tests against the installed package
       run: python -m coverage run -m pytest
     - name: Upload coverage data
@@ -98,9 +103,10 @@ jobs:
     - name: Install dependencies
       run: python -m pip install --upgrade pip coverage
     - name: Combine and check coverage
+      # The summary always gets the report, and the report in the log fails the job when the coverage is too low
       run: |
         python -m coverage combine
-        python -m coverage report --format=markdown >> "$GITHUB_STEP_SUMMARY"
+        python -m coverage report --format=markdown --fail-under=0 >> "$GITHUB_STEP_SUMMARY"
         python -m coverage report
 
   lint:

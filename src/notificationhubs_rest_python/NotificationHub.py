@@ -96,12 +96,12 @@ class AzureNotificationHub:
         self.Endpoint = endpoint
         self.SasKeyName = key_name
         self.SasKeyValue = key
-        self._sas_tokens = SasTokenProvider(endpoint + hub_name, key_name, key)
+        self._sas_tokens = SasTokenProvider()
         self._transport = Transport(timeout=timeout, max_retries=max_retries)
 
     def generate_sas_token(self) -> str:
         """Return a SAS token for the hub, to send in the ``Authorization`` header."""
-        return self._sas_tokens.token()
+        return self._sas_tokens.token(self.Endpoint + self.HubName, self.SasKeyName, self.SasKeyValue)
 
     def __generate_sas_token(self) -> str:
         # The 1.x name, which code that extends this class calls as

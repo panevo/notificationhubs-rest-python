@@ -1,5 +1,7 @@
 """What the send methods put on the wire, for each platform."""
 
+import logging
+
 import pytest
 
 from conftest import CONNECTION_STRING, HUB_NAME, assert_valid_sas_token, json_body, split_request
@@ -7,6 +9,8 @@ from notificationhubs_rest_python.NotificationHub import AzureNotification, Azur
 
 TOAST = '<toast><visual><binding template="ToastText01"><text id="1">Hi</text></binding></visual></toast>'
 TILE = '<tile><visual><binding template="TileSmall"><text>Hi</text></binding></visual></tile>'
+WP_TOAST = '<wp:Notification xmlns:wp="WPNotification"><wp:Toast><wp:Text1>Hi</wp:Text1></wp:Toast></wp:Notification>'
+WP_TILE = '<wp:Notification xmlns:wp="WPNotification"><wp:Tile><wp:Title>Hi</wp:Title></wp:Tile></wp:Notification>'
 
 
 @pytest.fixture
@@ -35,8 +39,7 @@ def test_template_send_with_tag_expression(hub, hub_api):
     [call] = hub_api.calls
     path, query, headers, _ = split_request(call.request)
     assert path == "/hub/messages/"
-    assert "api-version" in query
-    assert "direct" not in query
+    assert query == {"api-version": ["2020-06"]}
     assert headers["ServiceBusNotification-Format"] == "template"
     assert headers["ServiceBusNotification-Tags"] == tags
     assert json_body(call.request) == {"site_name": "Plant 1"}
@@ -72,7 +75,7 @@ def test_direct_send(hub, hub_api):
     [call] = hub_api.calls
     path, query, headers, _ = split_request(call.request)
     assert path == "/hub/messages/"
-    assert "direct" in query
+    assert query == {"direct": [""], "api-version": ["2020-06"]}
     assert headers["ServiceBusNotification-DeviceHandle"] == "device-token"
 
 
@@ -85,7 +88,11 @@ def test_direct_send_without_device_handle_raises(hub, hub_api):
 
 @pytest.mark.parametrize(
     ("method", "platform_format"),
-    [("send_amazon_notification", "adm"), ("send_baidu_notification", "baidu")],
+    [
+        ("send_amazon_notification", "adm"),
+        ("send_baidu_notification", "baidu"),
+        ("send_google_notification", "gcm"),
+    ],
 )
 def test_other_json_platforms(hub, hub_api, method, platform_format):
     getattr(hub, method)(False, {"data": {"message": "Hello"}}, tags="news")
@@ -99,7 +106,7 @@ def test_other_json_platforms(hub, hub_api, method, platform_format):
 
 @pytest.mark.parametrize(
     ("payload", "wns_type"),
-    [(TOAST, "wns/toast"), (TILE, "wns/tile")],
+    [(TOAST, "wns/toast"), (TILE, "wns/tile"), ("<badge></badge>", "wns/badge"), ("Hello", None)],
 )
 def test_windows_send(hub, hub_api, payload, wns_type):
     hub.send_windows_notification(False, payload, tags="news")
@@ -108,7 +115,23 @@ def test_windows_send(hub, hub_api, payload, wns_type):
     _, _, headers, body = split_request(call.request)
     assert headers["ServiceBusNotification-Format"] == "windows"
     assert headers["Content-Type"] == "application/xml"
-    assert headers["X-WNS-Type"] == wns_type
+    assert headers.get("X-WNS-Type") == wns_type
+    assert body == payload
+
+
+@pytest.mark.parametrize(
+    ("payload", "target", "notification_class"),
+    [(WP_TOAST, "toast", "2"), (WP_TILE, "tile", "1"), ("Hello", None, None)],
+)
+def test_windows_phone_send(hub, hub_api, payload, target, notification_class):
+    hub.send_windows_phone_notification(False, payload, tags="news")
+
+    [call] = hub_api.calls
+    _, _, headers, body = split_request(call.request)
+    assert headers["ServiceBusNotification-Format"] == "windowsphone"
+    assert headers["Content-Type"] == "application/xml"
+    assert headers.get("X-WindowsPhone-Target") == target
+    assert headers.get("X-NotificationClass") == notification_class
     assert body == payload
 
 
@@ -129,6 +152,19 @@ def test_skip_send_makes_no_request(hub, hub_api):
     assert status == 201
     assert headers["ServiceBusNotification-Format"] == "template"
     assert len(hub_api.calls) == 0
+
+
+def test_debug_sends_a_test_notification_and_logs_it(hub_api, caplog):
+    caplog.set_level(logging.DEBUG, logger="notificationhubs_rest_python")
+    hub = AzureNotificationHub(CONNECTION_STRING, HUB_NAME, debug=1)
+
+    status, _ = hub.send_template_notification({"message": "Hello"})
+
+    assert status == 201
+    [call] = hub_api.calls
+    assert split_request(call.request)[1] == {"api-version": ["2020-06"], "test": [""]}
+    assert "Sending notification: POST" in caplog.text
+    assert "Test send outcome: 201" in caplog.text
 
 
 def test_failed_send_raises(hub, failing_hub_api):
