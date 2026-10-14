@@ -26,6 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - A `Retry-After` header that is not a finite number is ignored, and the default backoff is used instead
 - Notifications are sent encoded as UTF-8. Previously, with urllib3 1.x, Windows notifications with characters outside Latin-1 failed with a `UnicodeEncodeError`
 - An empty set of tags raises a `ValueError`. Previously the notification was sent to all devices
+- `NotificationHubError` keeps plain-text error responses as its detail, such as `Access denied. Invalid SAS token.` for a wrong key
 - Panevo now maintains the code. Update the README for 2.0 and report vulnerabilities through GitHub's private vulnerability reporting
 
 ## [1.0.3] - 2026-10-14
