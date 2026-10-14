@@ -1,4 +1,5 @@
 import logging
+import math
 import random
 import time
 from collections.abc import Mapping
@@ -59,9 +60,11 @@ class Transport:
         if value is None:
             return None
         try:
-            return max(float(value), 0.0)
+            seconds = float(value)
         except ValueError:
             pass
+        else:
+            return max(seconds, 0.0) if math.isfinite(seconds) else None
         try:
             retry_at = parsedate_to_datetime(value)
         except (TypeError, ValueError):
