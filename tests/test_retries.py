@@ -67,6 +67,20 @@ def test_retry_after_as_a_date(hub, sleeps):
     assert 28 <= delay <= 30
 
 
+@pytest.mark.usefixtures("local_time_zone")
+@pytest.mark.parametrize(
+    "date_format", ["%a, %d %b %Y %H:%M:%S -0000", "%a %b %d %H:%M:%S %Y"], ids=["-0000", "asctime"]
+)
+def test_retry_after_date_without_a_time_zone_is_utc(hub, sleeps, date_format):
+    retry_at = datetime.now(timezone.utc) + timedelta(seconds=30)
+
+    with sequence((503, {"Retry-After": retry_at.strftime(date_format)}), (201, None)):
+        send(hub)
+
+    [delay] = sleeps
+    assert 28 <= delay <= 30
+
+
 def test_retry_after_date_in_the_past(hub, sleeps):
     with sequence((503, {"Retry-After": "Wed, 21 Oct 2015 07:28:00 GMT"}), (201, None)):
         send(hub)

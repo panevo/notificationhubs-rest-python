@@ -1,6 +1,5 @@
 """Platforms that changed since 1.x: FCM v1 replaces GCM, MPNS is gone, scheduled times use UTC."""
 
-import time
 from datetime import datetime, timedelta, timezone, tzinfo
 
 import pytest
@@ -74,18 +73,6 @@ class NoUtcOffset(tzinfo):
 
     def dst(self, dt):
         return None
-
-
-@pytest.fixture
-def local_time_zone():
-    """Make the local time zone 5 hours behind UTC during the test."""
-    if not hasattr(time, "tzset"):
-        pytest.skip("Changing the local time zone needs time.tzset")
-    with pytest.MonkeyPatch.context() as patch:
-        patch.setenv("TZ", "EST+5")
-        time.tzset()
-        yield
-    time.tzset()
 
 
 @pytest.mark.usefixtures("local_time_zone")

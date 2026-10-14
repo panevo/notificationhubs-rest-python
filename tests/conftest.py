@@ -38,6 +38,18 @@ def sleeps(monkeypatch):
 
 
 @pytest.fixture
+def local_time_zone():
+    """Make the local time zone 5 hours behind UTC during the test."""
+    if not hasattr(time, "tzset"):
+        pytest.skip("Changing the local time zone needs time.tzset")
+    with pytest.MonkeyPatch.context() as patch:
+        patch.setenv("TZ", "EST+5")
+        time.tzset()
+        yield
+    time.tzset()
+
+
+@pytest.fixture
 def hub_api():
     """Fake Notification Hubs API that accepts every request with 201 Created."""
     with responses.RequestsMock(assert_all_requests_are_fired=False) as mock:
