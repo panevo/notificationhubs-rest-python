@@ -31,10 +31,18 @@ def test_error_with_the_service_details(hub):
     )
 
 
-@pytest.mark.parametrize(
-    "body",
-    ["", "Service Unavailable", "<html><body>Bad gateway</body>", "<Error><Unexpected/></Error>"],
-)
+@pytest.mark.parametrize("body", ["Access denied. Invalid SAS token.", "\nAccess denied. Invalid SAS token.\n"])
+def test_error_with_a_plain_text_body(hub, body):
+    # Notification Hubs answers a wrong key with a plain-text body instead of XML
+    error = fail_with(hub, 401, body)
+
+    assert (error.status_code, error.code, error.detail) == (401, None, "Access denied. Invalid SAS token.")
+    assert str(error) == (
+        "Error sending notification. Received HTTP code 401 Unauthorized: Access denied. Invalid SAS token."
+    )
+
+
+@pytest.mark.parametrize("body", ["", " \n", "<html><body>Bad gateway</body>", "<Error><Unexpected/></Error>"])
 def test_error_without_service_details(hub, body):
     error = fail_with(hub, 401, body)
 

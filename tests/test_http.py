@@ -86,3 +86,12 @@ def test_error_from_the_service(hub, server):
         hub.send_template_notification({"message": "Hello"})
 
     assert (error.value.status_code, error.value.code, error.value.detail) == (400, "400", "The payload is invalid.")
+
+
+def test_plain_text_error_from_the_service(hub, server):
+    server.answers.append((401, b"Access denied. Invalid SAS token."))
+
+    with pytest.raises(NotificationHubError) as error:
+        hub.send_template_notification({"message": "Hello"})
+
+    assert (error.value.status_code, error.value.detail) == (401, "Access denied. Invalid SAS token.")
