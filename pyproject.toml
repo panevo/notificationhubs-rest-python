@@ -34,11 +34,11 @@ Homepage = "https://github.com/panevo/notificationhubs-rest-python"
 Changelog = "https://github.com/panevo/notificationhubs-rest-python/blob/main/CHANGELOGS.md"
 
 [tool.hatch.build.targets.wheel]
-packages = ["notificationhubs_rest_python"]
+packages = ["src/notificationhubs_rest_python"]
 
 [tool.hatch.build.targets.sdist]
 include = [
-    "/notificationhubs_rest_python",
+    "/src",
     "/tests",
     "/CHANGELOGS.md",
     "/SECURITY.md",
